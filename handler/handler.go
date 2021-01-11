@@ -3,14 +3,39 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/feitianlove/FIleStore/config"
 	"github.com/feitianlove/FIleStore/meta"
+	"github.com/feitianlove/FIleStore/models"
+	"github.com/feitianlove/FIleStore/store"
 	"github.com/feitianlove/FIleStore/util"
+
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
 )
+
+//初始化db
+var (
+	dbClient *store.Store
+)
+
+func init() {
+	conf := config.Config{MysqlConf: &config.MysqlConf{
+		User:     "root",
+		Pass:     "ftfeng123",
+		Host:     "127.0.0.1",
+		Port:     3306,
+		Database: "fileserver",
+	}}
+	c, err := store.NewStore(&conf)
+	if err != nil {
+		panic(err)
+	}
+	dbClient = c
+
+}
 
 // 处理文件上传
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
@@ -57,8 +82,18 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		_, _ = newFile.Seek(0, 0)
 		fileMeta.FileSha1 = util.FileSha1(newFile)
+		// 文件中保存
 		meta.UpdateFileMeta(fileMeta)
-		fmt.Println(meta.FileMetas)
+		// v2 存储db
+		err = dbClient.CreateTblFile(&models.TblFile{
+			FileName: fileMeta.FileName,
+			FileSha1: fileMeta.FileSha1,
+			FileSize: fileMeta.FileSize,
+			FileAddr: fileMeta.Location,
+		})
+		if err != nil {
+			fmt.Println(err)
+		}
 		http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
 	}
 }

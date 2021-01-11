@@ -1,5 +1,7 @@
 package meta
 
+import "github.com/feitianlove/FIleStore/models"
+
 // 文件元信息结构
 type FileMeta struct {
 	FileSha1 string
@@ -29,4 +31,9 @@ func GetFileMeta(fileSha1 string) FileMeta {
 
 func RemoveFileMeta(fileSha1 string) {
 	delete(FileMetas, fileSha1)
+}
+
+//UPFileMetaDB
+func UPDateFileMetaDB(meta FileMeta) bool {
+	return models.OnFileUploadFinished(meta.FileSha1, meta.FileName, meta.FileSize, meta.Location)
 }
