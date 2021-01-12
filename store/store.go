@@ -32,6 +32,9 @@ func NewStore(conf *config.Config) (*Store, error) {
 	db.LogMode(true)
 	db.SetLogger(logger.Mysql)
 	db.DB().SetConnMaxLifetime(60 * time.Second)
-	db.AutoMigrate(&models.TblFile{})
+	db.AutoMigrate(
+		&models.TblFile{},
+		models.TblUser{},
+	)
 	return &Store{db}, nil
 }

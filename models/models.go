@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type TblFile struct {
 	FileName string
 	FileSha1 string
@@ -7,7 +9,25 @@ type TblFile struct {
 	FileAddr string
 }
 
-func OnFileUploadFinished(fileHash, fileName string, fileSize int64, fileAddr string) bool {
-	//插入数据
-	return true
+// 用户表
+type TblUser struct {
+	Id             int
+	UserName       string
+	UserPwd        string
+	Email          string
+	Phone          string
+	EmailValidated int8
+	PhoneValidate  int8
+	SignUP         time.Time
+	LastActive     time.Time
+	Profile        string
+	Status         int
+}
+
+// 用户鉴权表
+
+type TblUserToken struct {
+	Id        int
+	UserName  string
+	UserToken string
 }
