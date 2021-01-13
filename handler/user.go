@@ -31,6 +31,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	username := r.Form.Get("username")
 	passwd := r.Form.Get("passwd")
+	fmt.Println(username, passwd)
 	if len(username) < 3 || len(passwd) < 4 {
 		_, _ = w.Write([]byte("invalid parameter"))
 		return
@@ -52,6 +53,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 
 func SignInHandler(w http.ResponseWriter, r *http.Request) {
 	//1。校验用户名和密码
+
 	username := ""
 	//2。生成访问凭证
 	token := GetToken(username)

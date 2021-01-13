@@ -34,7 +34,8 @@ func NewStore(conf *config.Config) (*Store, error) {
 	db.DB().SetConnMaxLifetime(60 * time.Second)
 	db.AutoMigrate(
 		&models.TblFile{},
-		models.TblUser{},
+		&models.TblUser{},
+		&models.TblUserToken{},
 	)
 	return &Store{db}, nil
 }

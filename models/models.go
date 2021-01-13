@@ -1,33 +1,36 @@
 package models
 
-import "time"
+import (
+	"github.com/jinzhu/gorm"
+	"time"
+)
 
 type TblFile struct {
-	FileName string
-	FileSha1 string
-	FileSize int64
-	FileAddr string
+	gorm.Model
+	FileName string `json:"file_name"`
+	FileSha1 string `json:"file_sha_1"`
+	FileSize int64  `json:"file_size"`
+	FileAddr string `json:"file_addr"`
 }
 
 // 用户表
 type TblUser struct {
-	Id             int
-	UserName       string
-	UserPwd        string
-	Email          string
-	Phone          string
-	EmailValidated int8
-	PhoneValidate  int8
-	SignUP         time.Time
-	LastActive     time.Time
-	Profile        string
-	Status         int
+	gorm.Model
+	UserName       string    `json:"user_name" gorm:"type:varchar(64)"`
+	UserPwd        string    `json:"user_pwd" gorm:"type:varchar(256)"`
+	Email          string    `json:"email" gorm:"type:varchar(128)"`
+	Phone          string    `json:"phone" gorm:"unique" sql:"type: varchar(128)"`
+	EmailValidated int       `json:"email_validated" gorm:"type:tinyint(1)"`
+	PhoneValidate  int       `json:"phone_validate" gorm:"type:tinyint(1)"`
+	SignUp         time.Time `json:"sign_up"`
+	LastActive     time.Time `json:"last_active"`
+	Profile        string    `json:"profile" gorm:"type:text"`
+	Status         int       `json:"status"`
 }
 
 // 用户鉴权表
-
 type TblUserToken struct {
-	Id        int
-	UserName  string
-	UserToken string
+	gorm.Model
+	UserName  string `json:"user_name" gorm:"type:varchar(64)"`
+	UserToken string `json:"user_token" gorm:"type:varchar(256)"`
 }
