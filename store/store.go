@@ -36,6 +36,7 @@ func NewStore(conf *config.Config) (*Store, error) {
 		&models.TblFile{},
 		&models.TblUser{},
 		&models.TblUserToken{},
+		&models.TblUserFile{},
 	)
 	return &Store{db}, nil
 }

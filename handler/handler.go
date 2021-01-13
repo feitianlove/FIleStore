@@ -24,7 +24,7 @@ var (
 func init() {
 	conf := config.Config{MysqlConf: &config.MysqlConf{
 		User:     "root",
-		Pass:     "fenghui",
+		Pass:     "ftfeng123",
 		Host:     "127.0.0.1",
 		Port:     3306,
 		Database: "fileserver",
