@@ -4,15 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/feitianlove/FIleStore/config"
+	"github.com/feitianlove/FIleStore/cos"
 	"github.com/feitianlove/FIleStore/meta"
 	"github.com/feitianlove/FIleStore/models"
 	"github.com/feitianlove/FIleStore/store"
 	"github.com/feitianlove/FIleStore/util"
-
+	"github.com/feitianlove/golib/common/ecode"
+	"github.com/feitianlove/golib/common/predicate"
+	"gopkg.in/amz.v1/s3"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -80,6 +84,19 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Printf("Fail to save data into file,err %s\n", err)
 			return
 		}
+		// TODO 将文件保存到ceph中
+		_, _ = newFile.Seek(0, 0)
+		data, _ := ioutil.ReadAll(newFile)
+		bucket := cos.GetS3Bucket("userFile")
+		cephPath := "/ceph/" + fileMeta.FileSha1
+		err = bucket.Put(cephPath, data, "octet-stream", s3.PublicRead)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Printf("Fail to save data into ceph,err %s\n", err)
+			return
+		}
+		fileMeta.Location = cephPath
+		//TODO 计算file hash
 		_, _ = newFile.Seek(0, 0)
 		fileMeta.FileSha1 = util.FileSha1(newFile)
 		// 文件中保存
@@ -93,6 +110,24 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		if err != nil {
 			fmt.Println(err)
+		}
+		// TODO 更新文件表
+		err = r.ParseForm()
+		if err != nil {
+			fmt.Printf("Fail to parse form, err %s ", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		username := r.Form.Get("username")
+		err = dbClient.CreateTblUserFile(&models.TblUserFile{
+			UserName: username,
+			FileName: fileMeta.FileName,
+			FileSha1: fileMeta.FileSha1,
+			FileSize: fileMeta.FileSize,
+			Status:   0,
+		})
+		if err != nil {
+			_, _ = w.Write([]byte("upload Failed"))
 		}
 		http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
 	}
@@ -119,6 +154,25 @@ func GetFileMetaHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, _ = w.Write(data)
+}
+
+//根据查询用户的文件信息
+func FileQueryHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Printf("Fail to parse form, err %s ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	limitCut, _ := strconv.Atoi(r.Form.Get("limit"))
+	username := r.Form.Get("username")
+	data, err := dbClient.GetTblUserFileByUserName(predicate.EqualPredicate, username)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte("query file by username err"))
+	}
+	mes, _ := json.Marshal(data[:limitCut])
+	_, _ = w.Write(mes)
 }
 
 // 文件下载
@@ -202,3 +256,59 @@ func FileDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 }
+
+// 妙传逻辑
+func TryFastUpLoadHandler(w http.ResponseWriter, r *http.Request) {
+	// 1。解析请求参数
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Printf("Fail to parse form, err %s ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	fileSha1 := r.Form.Get("fileHash")
+	userName := r.Form.Get("username")
+	fileName := r.Form.Get("filename")
+	fileSize, _ := strconv.Atoi(r.Form.Get("filesize"))
+	// 2。从文件表中查询相同hash的文件记录
+	fileMeta, err := dbClient.GetTblFileByFileSha1(predicate.EqualPredicate, fileSha1)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	// 3。查不到记录则返回妙传失败
+	if len(fileMeta) == 0 {
+		resp := &ecode.RespMsg{
+			Code: -1,
+			Msg:  "妙传失败，请访问普通上传接口",
+			Data: nil,
+		}
+		//resp = ecode.NewResponseMsg(-1, "妙传失败，请访问普通上传接口", nil)
+		result, _ := resp.JOSNBytes()
+		_, _ = w.Write(result)
+	}
+	// 4。上传过则将文件信息写入用户文件表，返回成功
+	err = dbClient.CreateTblUserFile(&models.TblUserFile{
+		UserName: userName,
+		FileName: fileName,
+		FileSha1: fileSha1,
+		FileSize: int64(fileSize),
+		Status:   0,
+	})
+	if err != nil {
+		_, _ = w.Write([]byte("upload Failed"))
+	}
+	resp := &ecode.RespMsg{
+		Code: 0,
+		Msg:  "success",
+		Data: nil,
+	}
+	//resp = ecode.NewResponseMsg(-1, "妙传失败，请访问普通上传接口", nil)
+	result, _ := resp.JOSNBytes()
+	_, _ = w.Write(result)
+}
+
+//TODO 相同文件冲突处理
+// 1。 允许不同用户同时上传同一个文件
+// 2。先完成的先入库
+// 3。后面上传的只更新用户文件表，并删除已经上传的文件表
