@@ -6,6 +6,7 @@ import (
 	"github.com/feitianlove/FIleStore/util"
 	"github.com/feitianlove/golib/common/ecode"
 	"github.com/feitianlove/golib/common/predicate"
+	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -153,4 +154,30 @@ func IsTokenValid(token string) bool {
 	// 1. 判断token 的时效性，是否过期
 	// 2. 查询是否有username和token的信息，是否一致
 	return true
+}
+
+//gin 改造用户登陆
+func DoSignupHandler(c *gin.Context) {
+	username := c.Request.FormValue("username")
+	passwd := c.Request.FormValue("passwd")
+	if len(username) < 3 || len(passwd) < 4 {
+		ecode.RespErrCode(c, ecode.ErrError, "the username or passwd is invalid")
+		return
+	}
+	encPasswd := util.Sha1([]byte(passwd + pwdSalt))
+	user := models.TblUser{
+		UserName:   username,
+		UserPwd:    encPasswd,
+		Phone:      "110",
+		LastActive: time.Now(),
+	}
+	err := dbClient.CreateTblUser(&user)
+	if err != nil {
+		ecode.RespErrCode(c, ecode.ErrError, fmt.Sprintf("store db err: %s", err))
+		return
+	}
+	ecode.RespOkData(c, nil, "")
+}
+func SignUpHtml(c *gin.Context) {
+	c.Redirect(http.StatusFound, "/static/view/signup.html")
 }
