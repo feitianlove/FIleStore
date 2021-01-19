@@ -1,16 +1,16 @@
-syntax="proto3"
+syntax="proto3";
 
 package proto;
 
 service  UserService {
-    rpc Signup(ReqSignup) returns RespSignup{}
-    //rpc Signin(ReqSignup) returns RespSignup{}
+    rpc Signup(ReqSignup) returns (RespSignup){}
+    //rpc Signin(ReqSignup) returns (RespSignup){}
 
 }
 
 message ReqSignup {
-    int32 code = 1;
-    string message = 2;
+    string username = 1;
+    string passwd = 2;
 }
 
 
@@ -19,5 +19,5 @@ message RespSignup {
     string message = 2;
 }
 
-// protoc-gen-go --proto_path=./service/account/user.proto --go_out=./service/account/proto --micro_out=./service/account/proto service/account/user.proto
+// protoc  --proto_path=. --go_out=. --micro_out=.   ./service/account/user.proto
 

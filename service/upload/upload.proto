@@ -1,0 +1,21 @@
+syntax="proto3";
+
+package go.micro.service.upload;
+
+service UplaodService {
+    rpc UploadEntry(ReqEntry) returns (RespReqEntry){}
+
+}
+
+message ReqEntry {
+}
+
+
+message RespReqEntry {
+    int32 code = 1;
+    string message = 2;
+    string entry=3;
+}
+
+// protoc  --proto_path=. --go_out=. --micro_out=.   ./service/upload/upload.proto
+
