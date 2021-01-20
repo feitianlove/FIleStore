@@ -4,12 +4,16 @@ import (
 	"github.com/feitianlove/FIleStore/service/account/handler"
 	"github.com/feitianlove/FIleStore/service/account/proto"
 	"github.com/micro/go-micro/v2"
+	"github.com/micro/go-micro/v2/registry"
 	"github.com/micro/go-plugins/registry/consul/v2"
 )
 
 func main() {
-	reg := consul.NewRegistry()
-
+	reg := consul.NewRegistry(func(options *registry.Options) {
+		options.Addrs = []string{
+			"127.0.0.1:8500",
+		}
+	})
 	service := micro.NewService(
 		micro.Name("go.micro.service.user"),
 		micro.Registry(reg),

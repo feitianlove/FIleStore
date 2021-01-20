@@ -6,6 +6,7 @@ import (
 	"github.com/feitianlove/FIleStore/models"
 	"github.com/feitianlove/FIleStore/store"
 	"github.com/feitianlove/FIleStore/util"
+	"github.com/gin-gonic/gin"
 	"gopkg.in/amz.v1/s3"
 	"io"
 
@@ -117,5 +118,8 @@ func DoUploadHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		_, _ = w.Write([]byte("upload Failed"))
 	}
+
+}
+func DoUploadHandlerGen(c *gin.Context) {
 
 }

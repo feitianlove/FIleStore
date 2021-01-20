@@ -13,7 +13,7 @@ var (
 )
 
 func init() {
-	//	service := micro.NewService(micro.Name("xx")) 如果没有micro.Name()表示不注册到注册中心
+	//	service := micro.NewService(micro.Name("go.micro.api.user")) 如果没有micro.Name()表示不注册到注册中心
 	service := micro.NewService()
 	//  解析命令行参数
 	service.Init()
