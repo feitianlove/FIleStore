@@ -31,3 +31,6 @@ require (
 	gopkg.in/amz.v1 v1.0.0-20150111123259-ad23e96a31d2
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
+replace (
+	google.golang.org/grpc => google.golang.org/grpc v1.26.0
+)
