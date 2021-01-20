@@ -2,10 +2,8 @@ module github.com/feitianlove/FIleStore
 
 go 1.13
 
-replace github.com/coreos/bbolt => go.etcd.io/bbolt v1.3.4
-
 require (
-	github.com/feitianlove/golib v0.0.0-20210113134317-5a1362a4ac36
+	github.com/feitianlove/golib v0.0.0-20210120030842-70c140b97e17
 	github.com/garyburd/redigo v1.6.2
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
@@ -13,7 +11,7 @@ require (
 	github.com/golang/protobuf v1.4.3
 	github.com/jinzhu/gorm v1.9.16
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/micro/go-micro v1.18.0
+	github.com/micro/go-micro v1.18.0 // indirect
 	github.com/micro/go-micro/v2 v2.9.1
 	github.com/micro/micro v1.18.0 // indirect
 	github.com/micro/micro/v2 v2.9.3 // indirect

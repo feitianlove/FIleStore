@@ -24,3 +24,4 @@ func main() {
 
 //运行
 //go run ./service/account/main.go --registry=consul
+//go mod edit -replace google.golang.org/grpc@v1.32.0=google.golang.org/grpc@v1.26.0
