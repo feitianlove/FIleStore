@@ -4,13 +4,18 @@ import (
 	"github.com/feitianlove/FIleStore/service/account/handler"
 	"github.com/feitianlove/FIleStore/service/account/proto"
 	"github.com/micro/go-micro/v2"
+	"github.com/micro/go-plugins/registry/consul/v2"
 )
 
 func main() {
+	reg := consul.NewRegistry()
+
 	service := micro.NewService(
 		micro.Name("go.micro.service.user"),
+		micro.Registry(reg),
 	)
 	service.Init()
+
 	err := proto.RegisterUserServiceHandler(service.Server(), new(handler.User))
 	if err != nil {
 		panic(err)
